@@ -174,14 +174,6 @@ export WINEPREFIX="$HOME/.wine64-homer"
 export WINEARCH=win64
 
 
-## REPLACE THIS WITH YOUR WOVEY PROJECT SLUG OR ID
-export WOVEY_PROJECT_OR_SLUG="myproject"
-
-export ANTHROPIC_BEDROCK_BASE_URL="https://wovey-api.woven.tech/bedrock/project/$WOVEY_PROJECT_OR_SLUG"
-export CLAUDE_CODE_SKIP_BEDROCK_AUTH=1
-export CLAUDE_CODE_USE_BEDROCK=1
-export CLAUDE_CODE_API_KEY_HELPER_TTL_MS=3600000
-export ANTHROPIC_DEFAULT_OPUS_MODEL='global.anthropic.claude-opus-4-6-v1'
-export ANTHROPIC_DEFAULT_SONNET_MODEL='global.anthropic.claude-sonnet-4-6'
-export ANTHROPIC_DEFAULT_HAIKU_MODEL='global.anthropic.claude-haiku-4-5-20251001-v1:0'
+# Machine/work-specific settings (not tracked in dotfiles)
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
