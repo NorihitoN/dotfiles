@@ -160,6 +160,7 @@ alias ep='echo -e ${PATH//:/\\n}'
 alias ps='procs'
 
 alias lg='lazygit'
+alias dlg='lazygit --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 
 # Dotfiles management (Bare Git)
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
