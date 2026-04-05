@@ -22,6 +22,71 @@ Personal dotfiles managed with a bare git repository.
 
 将来的に複数マシン間での差分管理やシークレット管理が必要になった場合は Chezmoi への移行も可能。
 
+## Setup
+
+### macOS（新しいMacのセットアップ）
+
+**1. Homebrew をインストール**
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+**2. dotfiles をセットアップ**
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/NorihitoN/dotfiles/main/install.sh)
+```
+
+**3. パッケージを一括インストール**
+
+```bash
+brew bundle install --file=~/Brewfile
+```
+
+**4. 後処理**
+
+```bash
+source ~/.zshrc
+touch ~/.zshrc.local  # マシン固有の設定ファイルを作成
+```
+
+---
+
+### Linux / WSL2（Ubuntu）
+
+**1. セットアップスクリプトを実行**
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/NorihitoN/dotfiles/main/setup_linux.sh)
+```
+
+インストール内容:
+- CLI ツール: `neovim`, `tmux`, `lazygit`, `bat`, `eza`, `fd`, `ripgrep`, `fzf`, `procs`, `git-delta`, `gh`, `starship`, `zoxide`, `lazydocker`
+- Docker Engine
+- 言語マネージャー: `rustup` / `uv` / `ghcup` / `nvm` / `coursier`
+- Oh My Zsh + `zsh-autosuggestions` / `zsh-syntax-highlighting`
+
+**2. dotfiles をセットアップ**
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/NorihitoN/dotfiles/main/install.sh)
+```
+
+**3. 後処理**
+
+```bash
+exec zsh
+
+nvm install --lts        # Node (LTS)
+ghcup install ghc        # Haskell GHC
+ghcup install cabal      # Haskell Cabal
+
+touch ~/.zshrc.local     # マシン固有の設定ファイルを作成
+```
+
+---
+
 ## Structure
 
 ```
@@ -44,22 +109,6 @@ Personal dotfiles managed with a bare git repository.
     ├── nvim/                # submodule: NorihitoN/nvim-config
     ├── sketchybar/
     └── starship.toml
-```
-
-## Install
-
-```bash
-bash <(curl -s https://raw.githubusercontent.com/NorihitoN/dotfiles/main/install.sh)
-```
-
-After installation:
-
-1. Reload shell: `source ~/.zshrc`
-2. Create `~/.zshrc.local` for machine-specific settings (not tracked):
-
-```bash
-# ~/.zshrc.local
-export SOME_API_KEY="..."
 ```
 
 ## Daily Usage
