@@ -105,7 +105,7 @@ source $ZSH/oh-my-zsh.sh
 
 if [[ "$(uname)" == "Darwin" ]]; then
   source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-  source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 else
   source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
   source ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -113,6 +113,23 @@ fi
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
+
+export ABBR_USER_ABBREVIATIONS_FILE="$HOME/.config/zsh/abbr/user-abbreviations"
+for abbr_source in \
+  /opt/homebrew/share/zsh-abbr/zsh-abbr.zsh \
+  /opt/homebrew/share/zsh-abbr@6/zsh-abbr.zsh \
+  /opt/homebrew/opt/zsh-abbr/share/zsh-abbr/zsh-abbr.zsh \
+  /opt/homebrew/opt/zsh-abbr@6/share/zsh-abbr/zsh-abbr.zsh \
+  /usr/local/share/zsh-abbr/zsh-abbr.zsh \
+  /usr/local/share/zsh-abbr@6/zsh-abbr.zsh \
+  /usr/local/opt/zsh-abbr/share/zsh-abbr/zsh-abbr.zsh \
+  /usr/local/opt/zsh-abbr@6/share/zsh-abbr/zsh-abbr.zsh
+do
+  if [[ -f "$abbr_source" ]]; then
+    source "$abbr_source"
+    break
+  fi
+done
 export _ZO_FZF_OPTS='
     --no-sort --height 75% --reverse --margin=0,1 --exit-0 --select-1
     --bind ctrl-f:page-down,ctrl-b:page-up
@@ -187,4 +204,3 @@ export WINEARCH=win64
 
 # Machine/work-specific settings (not tracked in dotfiles)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
-

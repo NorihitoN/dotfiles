@@ -1,0 +1,7 @@
+abbr d='dotfiles'
+abbr g='git'
+abbr gc='git commit'
+abbr gl='lazygit'
+abbr gp='git push'
+abbr gs='git status -sb'
+abbr v='nvim'

@@ -1,3 +1,5 @@
+tap "olets/tap"
+
 # 開発環境
 brew "ghcup"          # Haskell
 brew "rustup"         # Rust
@@ -29,5 +31,6 @@ brew "git-delta"
 brew "gh"
 brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
+brew "olets/tap/zsh-abbr@6"
 brew "borders"
 brew "sketchybar"
