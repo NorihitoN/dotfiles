@@ -113,6 +113,7 @@ fi
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
+eval "$(atuin init zsh)"
 
 export ABBR_USER_ABBREVIATIONS_FILE="$HOME/.config/zsh/abbr/user-abbreviations"
 for abbr_source in \
