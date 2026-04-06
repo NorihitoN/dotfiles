@@ -44,7 +44,15 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NorihitoN/dotfiles/main/inst
 brew bundle install --file=~/Brewfile
 ```
 
-**4. 後処理**
+**4. 初回セットアップを実行**
+
+```bash
+~/post_install.sh
+```
+
+`atuin` が入っていてまだ履歴DBがなければ、ここで `atuin import auto` を一度だけ実行します。
+
+**5. 後処理**
 
 ```bash
 source ~/.zshrc
@@ -76,6 +84,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NorihitoN/dotfiles/main/inst
 **3. 後処理**
 
 ```bash
+~/post_install.sh
+
 exec zsh
 
 nvm install --lts        # Node (LTS)
