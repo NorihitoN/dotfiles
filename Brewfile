@@ -17,6 +17,7 @@ brew "lazydocker"
 
 # CLI ツール（dotfiles使用）
 brew "neovim"
+brew "tree-sitter"    # treesitter ライブラリ（CLI は npm install -g tree-sitter-cli で別途インストール）
 brew "tmux"
 brew "lazygit"
 brew "starship"
