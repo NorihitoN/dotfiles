@@ -142,6 +142,47 @@ export _ZO_FZF_OPTS='
     --preview "([[ -e '{2..}/README.md' ]] && bat --color=always --style=numbers --line-range=:50 '{2..}/README.md') || eza --color=always --group-directories-first --oneline {2..}"
 '
 
+function ghq-fzf() {
+  (( $+commands[ghq] )) || return 1
+  (( $+commands[fzf] )) || return 1
+
+  local selected_dir
+  selected_dir="$(
+    ghq list --full-path | fzf \
+      --height 75% \
+      --reverse \
+      --preview 'eza --tree --level=2 --color=always --icons {} 2>/dev/null || ls -la {}'
+  )"
+
+  if [[ -n "$selected_dir" ]]; then
+    cd "$selected_dir" || return 1
+  fi
+}
+
+function ghq-fzf-widget() {
+  local selected_dir
+
+  (( $+commands[ghq] )) || return 0
+  (( $+commands[fzf] )) || return 0
+
+  selected_dir="$(
+    ghq list --full-path | fzf \
+      --height 75% \
+      --reverse \
+      --preview 'eza --tree --level=2 --color=always --icons {} 2>/dev/null || ls -la {}'
+  )"
+
+  if [[ -n "$selected_dir" ]]; then
+    BUFFER="cd ${(q)selected_dir}"
+    zle accept-line
+  fi
+
+  zle clear-screen
+}
+
+zle -N ghq-fzf-widget
+bindkey '^G' ghq-fzf-widget
+
 
 alias h='cd ~'
 alias ..='cd ..'
@@ -151,6 +192,7 @@ alias ....='cd ../../..'
 alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -i'
+alias tr='trash'
 
 if [[ $(command -v eza) ]]; then
   alias e='eza --icons --git'
@@ -179,6 +221,7 @@ alias ps='procs'
 
 alias lg='lazygit'
 alias dlg='lazygit --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias q='ghq-fzf'
 
 # Dotfiles management (Bare Git)
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
