@@ -7,3 +7,4 @@ git:
     pager: delta --dark --paging=never
   allBranchesLogCmd: git log --graph --all --color=always --abbrev-commit --decorate --date=relative  --pretty=medium
   branchLogCmd: git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --
+  showUntrackedFiles: false
