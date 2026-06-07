@@ -192,6 +192,11 @@ alias ....='cd ../../..'
 alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -i'
+function trash() {
+  echo -n "Move to trash: $* ? [y/N] "
+  read ans
+  [[ "$ans" == [yY] ]] && command trash "$@"
+}
 alias tr='trash'
 
 if [[ $(command -v eza) ]]; then
