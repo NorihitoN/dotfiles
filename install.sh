@@ -46,6 +46,8 @@ if ! dotfiles checkout 2>/dev/null; then
 fi
 
 # Initialize submodules
+# Bare repos need core.worktree set for submodule path resolution
+dotfiles config core.worktree "$HOME"
 echo "==> Initializing submodules..."
 dotfiles submodule update --init --recursive
 
