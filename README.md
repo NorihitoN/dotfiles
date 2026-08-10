@@ -70,10 +70,10 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NorihitoN/dotfiles/main/setu
 ```
 
 インストール内容:
-- CLI ツール: `neovim`, `tmux`, `lazygit`, `bat`, `eza`, `fd`, `ripgrep`, `fzf`, `procs`, `git-delta`, `gh`, `starship`, `zoxide`, `lazydocker`
+- CLI ツール: `neovim`, `tmux`, `herdr`, `lazygit`, `bat`, `eza`, `fd`, `ripgrep`, `fzf`, `procs`, `git-delta`, `gh`, `ghq`, `starship`, `zoxide`, `atuin`, `lazydocker`, `trash-cli`
 - Docker Engine
-- 言語マネージャー: `rustup` / `uv` / `ghcup` / `nvm` / `coursier`
-- Oh My Zsh + `zsh-autosuggestions` / `zsh-syntax-highlighting`
+- 言語マネージャー: `rustup` / `uv` / `ghcup` / `nvm` / `coursier` / `openjdk`
+- Oh My Zsh + `zsh-autosuggestions` / `zsh-syntax-highlighting` / `zsh-abbr`
 
 **2. dotfiles をセットアップ**
 
@@ -91,6 +91,7 @@ exec zsh
 nvm install --lts        # Node (LTS)
 ghcup install ghc        # Haskell GHC
 ghcup install cabal      # Haskell Cabal
+atuin import auto        # シェル履歴をインポート
 
 touch ~/.zshrc.local     # マシン固有の設定ファイルを作成
 ```
@@ -114,6 +115,7 @@ touch ~/.zshrc.local     # マシン固有の設定ファイルを作成
     │   ├── alacritty.toml
     │   └── themes/          # submodule: alacritty/alacritty-theme
     ├── borders/
+    ├── herdr/
     ├── karabiner/
     ├── lazygit/
     ├── nvim/                # submodule: NorihitoN/nvim-config
