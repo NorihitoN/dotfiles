@@ -56,7 +56,13 @@ brew bundle install --file=~/Brewfile
 
 ```bash
 source ~/.zshrc
-touch ~/.zshrc.local  # マシン固有の設定ファイルを作成
+
+nvm install --lts        # Node (LTS)
+ghcup install ghc        # Haskell GHC
+ghcup install cabal      # Haskell Cabal
+cs install metals        # Scala LSP (nvim用)
+
+touch ~/.zshrc.local     # マシン固有の設定ファイルを作成
 ```
 
 ---
@@ -91,6 +97,7 @@ exec zsh
 nvm install --lts        # Node (LTS)
 ghcup install ghc        # Haskell GHC
 ghcup install cabal      # Haskell Cabal
+cs install metals        # Scala LSP (nvim用)
 atuin import auto        # シェル履歴をインポート
 
 touch ~/.zshrc.local     # マシン固有の設定ファイルを作成
