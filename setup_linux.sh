@@ -14,11 +14,17 @@ err()   { echo -e "${RED}Error:${NC} $1"; }
 ARCH=$(uname -m)  # x86_64 or aarch64
 
 # Helper: get latest release tag from GitHub API
+# Uses gh CLI if authenticated (avoids rate limits), falls back to curl
 gh_latest_tag() {
   local repo="$1"
   local tag
-  tag=$(curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" \
-    | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+  if command -v gh &>/dev/null && gh auth status &>/dev/null; then
+    tag=$(gh release view --repo "$repo" --json tagName -q .tagName 2>/dev/null)
+  fi
+  if [[ -z "$tag" ]]; then
+    tag=$(curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" \
+      | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+  fi
   if [[ -z "$tag" ]]; then
     err "Failed to fetch latest tag for ${repo} (GitHub API rate limit?)"
     return 1
