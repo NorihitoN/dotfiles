@@ -2,16 +2,39 @@
 # Linux (WSL2/Ubuntu) environment setup script
 # Usage: bash setup_linux.sh
 
-set -e
-
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m'
 
 info()  { echo -e "${GREEN}==>${NC} $1"; }
 warn()  { echo -e "${YELLOW}Warning:${NC} $1"; }
+err()   { echo -e "${RED}Error:${NC} $1"; }
 
 ARCH=$(uname -m)  # x86_64 or aarch64
+
+# Helper: get latest release tag from GitHub API
+gh_latest_tag() {
+  local repo="$1"
+  local tag
+  tag=$(curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" \
+    | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+  if [[ -z "$tag" ]]; then
+    err "Failed to fetch latest tag for ${repo} (GitHub API rate limit?)"
+    return 1
+  fi
+  echo "$tag"
+}
+
+# Helper: download a file and verify it exists
+download() {
+  local url="$1" dest="$2"
+  curl -fSL -o "$dest" "$url"
+  if [[ ! -f "$dest" ]]; then
+    err "Download failed: $url"
+    return 1
+  fi
+}
 
 # ============================================================
 # System packages
@@ -54,17 +77,22 @@ fi
 # ============================================================
 # Neovim (binary tarball)
 # ============================================================
-if ! command -v nvim &>/dev/null; then
-  info "Installing Neovim..."
-  if [[ "$ARCH" == "aarch64" ]]; then
-    NVIM_ARCHIVE="nvim-linux-arm64.tar.gz"
-  else
-    NVIM_ARCHIVE="nvim-linux-x86_64.tar.gz"
-  fi
-  curl -LO "https://github.com/neovim/neovim/releases/latest/download/${NVIM_ARCHIVE}"
-  sudo tar -C /opt -xzf "${NVIM_ARCHIVE}"
-  sudo ln -sf /opt/nvim-linux-*/bin/nvim /usr/local/bin/nvim
-  rm "${NVIM_ARCHIVE}"
+info "Installing/updating Neovim..."
+if [[ "$ARCH" == "aarch64" ]]; then
+  NVIM_ARCHIVE="nvim-linux-arm64.tar.gz"
+  NVIM_DIR="nvim-linux-arm64"
+else
+  NVIM_ARCHIVE="nvim-linux-x86_64.tar.gz"
+  NVIM_DIR="nvim-linux-x86_64"
+fi
+if download "https://github.com/neovim/neovim/releases/latest/download/${NVIM_ARCHIVE}" "/tmp/${NVIM_ARCHIVE}"; then
+  sudo rm -rf "/opt/${NVIM_DIR}"
+  sudo tar -C /opt -xzf "/tmp/${NVIM_ARCHIVE}"
+  sudo ln -sf "/opt/${NVIM_DIR}/bin/nvim" /usr/local/bin/nvim
+  rm -f "/tmp/${NVIM_ARCHIVE}"
+  info "Neovim $(nvim --version | head -1) installed"
+else
+  warn "Skipping Neovim install"
 fi
 
 # ============================================================
@@ -86,16 +114,17 @@ fi
 # ============================================================
 if ! command -v delta &>/dev/null; then
   info "Installing git-delta..."
-  DELTA_VERSION=$(curl -s "https://api.github.com/repos/dandavison/delta/releases/latest" \
-    | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
-  if [[ "$ARCH" == "aarch64" ]]; then
-    DELTA_PKG="git-delta_${DELTA_VERSION}_arm64.deb"
-  else
-    DELTA_PKG="git-delta_${DELTA_VERSION}_amd64.deb"
+  if DELTA_VERSION=$(gh_latest_tag "dandavison/delta"); then
+    if [[ "$ARCH" == "aarch64" ]]; then
+      DELTA_PKG="git-delta_${DELTA_VERSION}_arm64.deb"
+    else
+      DELTA_PKG="git-delta_${DELTA_VERSION}_amd64.deb"
+    fi
+    if download "https://github.com/dandavison/delta/releases/download/${DELTA_VERSION}/${DELTA_PKG}" "/tmp/${DELTA_PKG}"; then
+      sudo dpkg -i "/tmp/${DELTA_PKG}"
+      rm -f "/tmp/${DELTA_PKG}"
+    fi
   fi
-  curl -LO "https://github.com/dandavison/delta/releases/download/${DELTA_VERSION}/${DELTA_PKG}"
-  sudo dpkg -i "${DELTA_PKG}"
-  rm "${DELTA_PKG}"
 fi
 
 # ============================================================
@@ -103,18 +132,20 @@ fi
 # ============================================================
 if ! command -v lazygit &>/dev/null; then
   info "Installing lazygit..."
-  LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" \
-    | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
-  if [[ "$ARCH" == "aarch64" ]]; then
-    LAZYGIT_ARCH="arm64"
-  else
-    LAZYGIT_ARCH="x86_64"
+  if LAZYGIT_TAG=$(gh_latest_tag "jesseduffield/lazygit"); then
+    LAZYGIT_VERSION="${LAZYGIT_TAG#v}"
+    if [[ "$ARCH" == "aarch64" ]]; then
+      LAZYGIT_ARCH="arm64"
+    else
+      LAZYGIT_ARCH="x86_64"
+    fi
+    LAZYGIT_FILE="lazygit_${LAZYGIT_VERSION}_Linux_${LAZYGIT_ARCH}.tar.gz"
+    if download "https://github.com/jesseduffield/lazygit/releases/download/${LAZYGIT_TAG}/${LAZYGIT_FILE}" "/tmp/${LAZYGIT_FILE}"; then
+      tar xf "/tmp/${LAZYGIT_FILE}" -C /tmp lazygit
+      sudo install /tmp/lazygit /usr/local/bin
+      rm -f /tmp/lazygit "/tmp/${LAZYGIT_FILE}"
+    fi
   fi
-  curl -Lo lazygit.tar.gz \
-    "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_${LAZYGIT_ARCH}.tar.gz"
-  tar xf lazygit.tar.gz lazygit
-  sudo install lazygit /usr/local/bin
-  rm lazygit lazygit.tar.gz
 fi
 
 # ============================================================
@@ -130,33 +161,33 @@ fi
 # ============================================================
 if ! command -v procs &>/dev/null; then
   info "Installing procs..."
-  PROCS_VERSION=$(curl -s "https://api.github.com/repos/dalance/procs/releases/latest" \
-    | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
-  if [[ "$ARCH" == "aarch64" ]]; then
-    PROCS_ARCHIVE="procs-v${PROCS_VERSION}-aarch64-linux.zip"
-  else
-    PROCS_ARCHIVE="procs-v${PROCS_VERSION}-x86_64-linux.zip"
+  if PROCS_TAG=$(gh_latest_tag "dalance/procs"); then
+    PROCS_VERSION="${PROCS_TAG#v}"
+    if [[ "$ARCH" == "aarch64" ]]; then
+      PROCS_ARCHIVE="procs-v${PROCS_VERSION}-aarch64-linux.zip"
+    else
+      PROCS_ARCHIVE="procs-v${PROCS_VERSION}-x86_64-linux.zip"
+    fi
+    if download "https://github.com/dalance/procs/releases/download/${PROCS_TAG}/${PROCS_ARCHIVE}" "/tmp/${PROCS_ARCHIVE}"; then
+      unzip -o "/tmp/${PROCS_ARCHIVE}" procs -d /tmp
+      sudo install /tmp/procs /usr/local/bin
+      rm -f /tmp/procs "/tmp/${PROCS_ARCHIVE}"
+    fi
   fi
-  curl -LO "https://github.com/dalance/procs/releases/download/v${PROCS_VERSION}/${PROCS_ARCHIVE}"
-  unzip "${PROCS_ARCHIVE}" procs
-  sudo install procs /usr/local/bin
-  rm procs "${PROCS_ARCHIVE}"
 fi
 
 # ============================================================
 # starship
 # ============================================================
-if ! command -v starship &>/dev/null; then
-  info "Installing starship..."
-  curl -sS https://starship.rs/install.sh | sh -s -- --yes
-fi
+info "Installing/updating starship..."
+curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
 
 # ============================================================
 # zoxide
 # ============================================================
 if ! command -v zoxide &>/dev/null; then
   info "Installing zoxide..."
-  curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+  curl -fsSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
 fi
 
 # ============================================================
@@ -164,24 +195,26 @@ fi
 # ============================================================
 if ! command -v herdr &>/dev/null; then
   info "Installing herdr..."
-  HERDR_VERSION=$(curl -s "https://api.github.com/repos/herdrdev/herdr/releases/latest" \
-    | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
-  if [[ "$ARCH" == "aarch64" ]]; then
-    HERDR_BIN="herdr-linux-aarch64"
-  else
-    HERDR_BIN="herdr-linux-x86_64"
+  if HERDR_TAG=$(gh_latest_tag "herdrdev/herdr"); then
+    HERDR_VERSION="${HERDR_TAG#v}"
+    if [[ "$ARCH" == "aarch64" ]]; then
+      HERDR_BIN="herdr-linux-aarch64"
+    else
+      HERDR_BIN="herdr-linux-x86_64"
+    fi
+    if download "https://github.com/herdrdev/herdr/releases/download/${HERDR_TAG}/${HERDR_BIN}" "/tmp/herdr"; then
+      sudo install /tmp/herdr /usr/local/bin
+      rm -f /tmp/herdr
+    fi
   fi
-  curl -Lo herdr "https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/${HERDR_BIN}"
-  sudo install herdr /usr/local/bin
-  rm herdr
 fi
 
 # ============================================================
 # atuin
 # ============================================================
-if ! command -v atuin &>/dev/null; then
+if ! command -v atuin &>/dev/null && [[ ! -f "$HOME/.atuin/bin/atuin" ]]; then
   info "Installing atuin..."
-  curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+  curl --proto '=https' --tlsv1.2 -fsSL https://setup.atuin.sh | sh
 fi
 
 # ============================================================
@@ -189,17 +222,19 @@ fi
 # ============================================================
 if ! command -v ghq &>/dev/null; then
   info "Installing ghq..."
-  GHQ_VERSION=$(curl -s "https://api.github.com/repos/x-motemen/ghq/releases/latest" \
-    | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
-  if [[ "$ARCH" == "aarch64" ]]; then
-    GHQ_ARCHIVE="ghq_linux_arm64.zip"
-  else
-    GHQ_ARCHIVE="ghq_linux_amd64.zip"
+  if GHQ_TAG=$(gh_latest_tag "x-motemen/ghq"); then
+    GHQ_VERSION="${GHQ_TAG#v}"
+    if [[ "$ARCH" == "aarch64" ]]; then
+      GHQ_ARCHIVE="ghq_linux_arm64.zip"
+    else
+      GHQ_ARCHIVE="ghq_linux_amd64.zip"
+    fi
+    if download "https://github.com/x-motemen/ghq/releases/download/${GHQ_TAG}/${GHQ_ARCHIVE}" "/tmp/${GHQ_ARCHIVE}"; then
+      unzip -o "/tmp/${GHQ_ARCHIVE}" -d /tmp/ghq_tmp
+      sudo install /tmp/ghq_tmp/ghq_linux_*/ghq /usr/local/bin
+      rm -rf /tmp/ghq_tmp "/tmp/${GHQ_ARCHIVE}"
+    fi
   fi
-  curl -LO "https://github.com/x-motemen/ghq/releases/download/v${GHQ_VERSION}/${GHQ_ARCHIVE}"
-  unzip "${GHQ_ARCHIVE}" -d ghq_tmp
-  sudo install ghq_tmp/ghq_linux_*/ghq /usr/local/bin
-  rm -rf ghq_tmp "${GHQ_ARCHIVE}"
 fi
 
 # ============================================================
@@ -238,22 +273,24 @@ fi
 # Node (nvm)
 if [ ! -d "$HOME/.nvm" ]; then
   info "Installing nvm (Node)..."
-  NVM_VERSION=$(curl -s "https://api.github.com/repos/nvm-sh/nvm/releases/latest" \
+  NVM_VERSION=$(curl -fsSL "https://api.github.com/repos/nvm-sh/nvm/releases/latest" \
     | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
-  curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
+  if [[ -n "$NVM_VERSION" ]]; then
+    curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
+  fi
 fi
 
 # Scala (coursier)
 if ! command -v cs &>/dev/null; then
   info "Installing coursier (Scala)..."
   if [[ "$ARCH" == "aarch64" ]]; then
-    curl -fL "https://github.com/coursier/launchers/raw/master/cs-aarch64-pc-linux.gz" | gzip -d > cs
+    curl -fL "https://github.com/coursier/launchers/raw/master/cs-aarch64-pc-linux.gz" | gzip -d > /tmp/cs
   else
-    curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > cs
+    curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > /tmp/cs
   fi
-  chmod +x cs
-  ./cs setup --yes
-  rm cs
+  chmod +x /tmp/cs
+  /tmp/cs setup --yes
+  rm -f /tmp/cs
 fi
 
 # ============================================================
@@ -301,3 +338,4 @@ echo "  1. Install dotfiles: bash <(curl -fsSL https://raw.githubusercontent.com
 echo "  2. Restart shell: exec zsh"
 echo "  3. Install Node LTS: nvm install --lts"
 echo "  4. Install GHC: ghcup install ghc && ghcup install cabal"
+echo "  5. Install Scala tools: cs install scala scalac scala-cli sbt sbtn scalafmt metals amm"
