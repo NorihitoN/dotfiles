@@ -27,6 +27,7 @@ dotfiles() {
 
 # Configure
 dotfiles config status.showUntrackedFiles no
+dotfiles config core.worktree "$HOME"
 dotfiles config user.name "NorihitoN"
 dotfiles config user.email "norihito0626@gmail.com"
 
@@ -46,8 +47,6 @@ if ! dotfiles checkout 2>/dev/null; then
 fi
 
 # Initialize submodules
-# Bare repos need core.worktree set for submodule path resolution
-dotfiles config core.worktree "$HOME"
 echo "==> Initializing submodules..."
 dotfiles submodule update --init --recursive
 
