@@ -60,7 +60,7 @@ source ~/.zshrc
 nvm install --lts        # Node (LTS)
 ghcup install ghc        # Haskell GHC
 ghcup install cabal      # Haskell Cabal
-cs install metals        # Scala LSP (nvim用)
+cs install scala scalac scala-cli sbt sbtn scalafmt metals amm  # Scala 3
 
 touch ~/.zshrc.local     # マシン固有の設定ファイルを作成
 ```
@@ -97,7 +97,7 @@ exec zsh
 nvm install --lts        # Node (LTS)
 ghcup install ghc        # Haskell GHC
 ghcup install cabal      # Haskell Cabal
-cs install metals        # Scala LSP (nvim用)
+cs install scala scalac scala-cli sbt sbtn scalafmt metals amm  # Scala 3
 atuin import auto        # シェル履歴をインポート
 
 touch ~/.zshrc.local     # マシン固有の設定ファイルを作成
