@@ -111,6 +111,8 @@ else
   source ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 fi
 
+[ -d "$HOME/.atuin/bin" ] && export PATH="$HOME/.atuin/bin:$PATH"
+
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 eval "$(atuin init zsh)"
