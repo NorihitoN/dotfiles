@@ -28,7 +28,7 @@ sudo apt install -y \
 # CLI tools via apt
 # ============================================================
 info "Installing CLI tools via apt..."
-sudo apt install -y fzf ripgrep
+sudo apt install -y fzf ripgrep trash-cli openjdk-21-jdk
 
 # bat (Ubuntu registers as batcat due to naming conflict)
 sudo apt install -y bat 2>/dev/null || true
@@ -160,6 +160,49 @@ if ! command -v zoxide &>/dev/null; then
 fi
 
 # ============================================================
+# herdr
+# ============================================================
+if ! command -v herdr &>/dev/null; then
+  info "Installing herdr..."
+  HERDR_VERSION=$(curl -s "https://api.github.com/repos/herdrdev/herdr/releases/latest" \
+    | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
+  if [[ "$ARCH" == "aarch64" ]]; then
+    HERDR_BIN="herdr-linux-aarch64"
+  else
+    HERDR_BIN="herdr-linux-x86_64"
+  fi
+  curl -Lo herdr "https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/${HERDR_BIN}"
+  sudo install herdr /usr/local/bin
+  rm herdr
+fi
+
+# ============================================================
+# atuin
+# ============================================================
+if ! command -v atuin &>/dev/null; then
+  info "Installing atuin..."
+  curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+fi
+
+# ============================================================
+# ghq
+# ============================================================
+if ! command -v ghq &>/dev/null; then
+  info "Installing ghq..."
+  GHQ_VERSION=$(curl -s "https://api.github.com/repos/x-motemen/ghq/releases/latest" \
+    | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
+  if [[ "$ARCH" == "aarch64" ]]; then
+    GHQ_ARCHIVE="ghq_linux_arm64.zip"
+  else
+    GHQ_ARCHIVE="ghq_linux_amd64.zip"
+  fi
+  curl -LO "https://github.com/x-motemen/ghq/releases/download/v${GHQ_VERSION}/${GHQ_ARCHIVE}"
+  unzip "${GHQ_ARCHIVE}" -d ghq_tmp
+  sudo install ghq_tmp/ghq_linux_*/ghq /usr/local/bin
+  rm -rf ghq_tmp "${GHQ_ARCHIVE}"
+fi
+
+# ============================================================
 # Docker Engine
 # ============================================================
 if ! command -v docker &>/dev/null; then
@@ -234,6 +277,12 @@ if [ ! -d "${ZSH_CUSTOM}/plugins/zsh-syntax-highlighting" ]; then
   info "Installing zsh-syntax-highlighting..."
   git clone https://github.com/zsh-users/zsh-syntax-highlighting \
     "${ZSH_CUSTOM}/plugins/zsh-syntax-highlighting"
+fi
+
+if [ ! -d "${ZSH_CUSTOM}/plugins/zsh-abbr" ]; then
+  info "Installing zsh-abbr..."
+  git clone https://github.com/olets/zsh-abbr \
+    "${ZSH_CUSTOM}/plugins/zsh-abbr"
 fi
 
 # ============================================================

@@ -19,6 +19,7 @@ brew "lazydocker"
 brew "neovim"
 brew "tree-sitter"    # treesitter ライブラリ（CLI は npm install -g tree-sitter-cli で別途インストール）
 brew "tmux"
+brew "herdr"
 brew "lazygit"
 brew "starship"
 brew "zoxide"
