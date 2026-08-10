@@ -124,7 +124,8 @@ for abbr_source in \
   /usr/local/share/zsh-abbr/zsh-abbr.zsh \
   /usr/local/share/zsh-abbr@6/zsh-abbr.zsh \
   /usr/local/opt/zsh-abbr/share/zsh-abbr/zsh-abbr.zsh \
-  /usr/local/opt/zsh-abbr@6/share/zsh-abbr/zsh-abbr.zsh
+  /usr/local/opt/zsh-abbr@6/share/zsh-abbr/zsh-abbr.zsh \
+  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-abbr/zsh-abbr.zsh
 do
   if [[ -f "$abbr_source" ]]; then
     source "$abbr_source"
@@ -240,15 +241,17 @@ else
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 fi
 
-export ANDROID_HOME=$HOME/Library/Android/sdk
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
-
 export PATH="$HOME/.ghcup/bin:$PATH"
 
-export PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
-export WINEPREFIX="$HOME/.wine64-homer"
-export WINEARCH=win64
+if [[ "$(uname)" == "Darwin" ]]; then
+  export ANDROID_HOME=$HOME/Library/Android/sdk
+  export PATH=$PATH:$ANDROID_HOME/platform-tools
+  export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+
+  export PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
+  export WINEPREFIX="$HOME/.wine64-homer"
+  export WINEARCH=win64
+fi
 
 
 # Machine/work-specific settings (not tracked in dotfiles)

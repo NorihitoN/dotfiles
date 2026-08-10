@@ -1,4 +1,4 @@
 . "$HOME/.cargo/env"
 
 # uv
-export PATH="/Users/norihito.nakata/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
