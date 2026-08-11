@@ -231,6 +231,9 @@ alias lg='lazygit'
 alias dlg='lazygit --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 alias q='ghq-fzf'
 
+alias hl='herdr'
+alias hr='herdr --remote work-dev'
+
 # Dotfiles management (Bare Git)
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
